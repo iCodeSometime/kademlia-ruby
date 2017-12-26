@@ -1,17 +1,23 @@
 module DHT
   class DataKey
-    ID_LENGTH = id_length
+    @attr_reader :id
+    ID_LENGTH = 20
+
     def self.calc_distance(first_id, second_id)
       first_id.zip(second_id).map do |id_1, id_2|
         id_1 ^ id_2
+      end.sum
+    end
+
+    def initialize(data)
+      rng = Random.new(data)
+      @id = Array.new(ID_LENGTH) do
+        # result will be less than max, thus one byte
+        rng.rand(256)
       end
     end
-    # Currently only supports MD5.length as max.
-    def initialize(data)
-      @id = Digest::MD5.hexdigest(data).split('')[0..ID_LENGTH]
-    end
-    def distance_to(foreign_id)
-      DataKey.calc_distance(@id, foreign_id)
+    def distance_to(second_node)
+      DataKey.calc_distance(@id, second_node.id)
     end
   end
 end
