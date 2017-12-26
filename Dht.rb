@@ -2,35 +2,67 @@ require 'digest'
 module DHT
   ##
   # Stores the Routing Table.
-  # TODO: metaprogramming..? I had a good idea about using method missing here,
-  # to pass the methods transparently to the node, but not sure I like it now.
-  class RoutingTable
+  #
+  # All calls to the routing bucket should be called on the routing table.
+  # The class determines which bucket should receive the call, and sends it.
+  #
+  # The only requirement imposed by this architecture is that a data_key must
+  # be the first argument to all routing_bucket calls,
+  # in order to find the correct bucket. I don't imagine any method that won't
+  # need the id of a node, but this should be kept in mind as the app develops.
+    class RoutingTable
     def initialize
       @routing_table = []
     end
     #TODO read up on method missing, to fill out psudo
-    def method_missing node_id, *args
-      get_bucket(node_id).__method__name__(node_id, *args)
+    def method_missing method_sym, node_id, *args
+      # I like public send to enforce OOP separation
+      get_bucket(node_id).public_send(method_sym, node_id, *args)
     end
 
-    def get_bucket
+    # Should select the offset closest bucket. e.g, if the middle element is
+    # bucket, should return [4, 2, 0, 1, 3] with increasing offsets
+    def next(bucket, offset)
+      # Shallow copy
+      arr = @routing_table.dup
+# TODO: Poor time complexity. Try to come up with something more efficient.
+      temp = offset.times do |cur_offset|
+        arr.pop(bucket + (cur_offset.even? ? cur_offset : 0))
+      end
+    end
+
+    def get_bucket foreign_id
       dist = NODE_ID.distance_to(foreign_id)
       bucket_id = k.times do |n|
         break n - 1 if 2 ** n > dist
       end
       @routing_table[bucket_id]
     end
+    def get_closest_nodes(count, data_key)
+      ret = []
+      original_bucket = get_bucket(data_key)
+      offset = 0
+      until ret.length >= count
+        # Ruby concatenates here; no need to flatten
+        ret += next(original_bucket, offset).take(count)
+        offset += 1
+      end
+      ret
+    end
   end
+
   class DhtClient
+    ALPHA = 3.freeze
+    PORT = 63405.freeze
     def initialize(data)
-      ID_LENGTH = 16
+# TODO: Should this be frozen? Do we want to support changing node id?
+# Would it even matter? (no additional privacy, since IP address is known)
       NODE_ID =  DataKey.new(data)
-      CONCURRENT_REQUESTS = 3
-      PORT = 63405
 
       @routing_buckets = []
       @pending_requests = []
       @threads = []
+      @routing_table = RoutingTable.new
       client_loop
     end
 
@@ -54,19 +86,10 @@ module DHT
     end
 
     def update_routing(foreign_id, addr, sock)
-      routing_bucket(foreign_id).update_peer(foreign_id, addr, port)
+      RoutingBucket.update_peer(foreign_id, addr, port)
     end
 
-    # 2^bucket <= distance_to(foreign_id) < 2^(bucket + 1)
-# TODO: I'm not sure I like this being in the DhtClient class.
-# e.g. RoutingBucket[foreign_key]
-    def routing_bucket(foreign_id)
-      dist = NODE_ID.distance_to(foreign_id)
-      bucket_id = k.times do |n|
-        break n - 1 if 2 ** n > dist
-      end
-      @routing_buckets[bucket_id]
-    end
+
 
 #region: Iterative methods.
 # Uses Primative methods found in routing nodes.
