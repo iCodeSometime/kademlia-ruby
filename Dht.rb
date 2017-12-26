@@ -14,7 +14,7 @@ module DHT
     def initialize
       @routing_table = []
     end
-    #TODO read up on method missing, to fill out psudo
+#TODO read up on method missing, to fill out psudo
     def method_missing method_sym, node_id, *args
       # I like public send to enforce OOP separation
       get_bucket(node_id).public_send(method_sym, node_id, *args)
@@ -96,7 +96,8 @@ module DHT
 # These can block waiting for the response, since they'll have their own thread.
 # TODO: Maybe rename these to kademlia_* instead of iterative_*?
     ##
-    # Stores a key value pair at TODO: Which nodes does it store at?
+    # Stores a key value pair at
+# TODO: Which nodes does it store at?
     #
     # @note This method is blocking and should be called in it's own thread
 # TODO: Should I create the threads in the functions?
@@ -129,11 +130,10 @@ module DHT
     # => and return either an Array of "k" closer nodes, or a value.
     # @param [DataKey] The key being searched for.
     # @return The first non-array value returned from find_function
-# TODO: Not positive I'll be able to use this.
-#`find_node` always returns "k" closest.
-# renamed it to get_closest_nodes because of this confusion.
-# I'll need to learn more about how find_node should work in order to determine
-# If this is a valid architecture.
+# TODO: find_node and find_value have almost identical implementations.
+# I'll probably need to rewrite this, but there should be a generic function.
+
+# TODO: Finish implementation
     def search(find_function, data_key)
       alpha_contacts = routing_table.get_closest_nodes(ALPHA, data_key)
 
