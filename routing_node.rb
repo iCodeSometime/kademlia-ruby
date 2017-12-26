@@ -13,7 +13,7 @@ module DHT
     ##
     # Pings the node to ensure it's still online.
     # @param node_id [DHT::DataKey] the id of the node to ping.
-    def ping(node_id)
+    def ping
       # Send the ping to the node.
     end
 
@@ -23,14 +23,19 @@ module DHT
     ##
     # Returns the closest nodes, up to "k".
     # @param (see #ping)
-# TODO: Name as written in spec seems misleading.
-
+    # Referred to as find_node in spec. It's been renamed here, because I
+    # found the name misleading. It never returns a single value.
     def get_closest_nodes(node_id)
       # Should never send requestor's node.
+      Thread.new(node_id) do
+# TODO: Create LowLevelNetworking class
+        Thread.current[:output] = LowLevelNetworking.send_request(@node_id, :get_closest_nodes)
+      end.join
     end
 
     def find_value(key)
     end
+
 #endregion
   end
 end

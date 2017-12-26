@@ -118,7 +118,7 @@ module DHT
     #
     # @note (see #iterative_store)
     def iterative_find_value key
-      search(:find_value, key)
+      search(:get_closest_nodes, key)
     end
 
     ##
@@ -134,8 +134,21 @@ module DHT
 # renamed it to get_closest_nodes because of this confusion.
 # I'll need to learn more about how find_node should work in order to determine
 # If this is a valid architecture.
-    def search(find_function, node)
+    def search(find_function, data_key)
+      alpha_contacts = routing_table.get_closest_nodes(ALPHA, data_key)
 
+      threads = alpha_contacts.map do |node|
+        node.send(find_function, data_key)
+      end
+# TODO: probably crashes if all nodes haven't returned
+      sleep(5.seconds)
+      shortlist = threads.map do |t|
+        t[:output]
+      end.flatten.sort_by do |node|
+        data_key.distance_to(node.node_id)
+      end.take(ALPHA)
+
+      closest_node = shortlist.min_by { |n| n.distance_to(data_key) }
     end
 #endregion
 
@@ -148,7 +161,7 @@ module DHT
     def _store node_id, key, value
     end
 
-    def _find_node node_id
+    def _get_closest_nodes
       # Our node shouldn't have been sent, but discard it, if it was.
       # Our node should never get added to the routing table.
     end
