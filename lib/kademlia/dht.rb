@@ -1,4 +1,4 @@
-require 'digest'
+# TODO: Rename to Kademlia
 module DHT
   ##
   # Stores the Routing Table.
