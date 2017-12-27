@@ -1,4 +1,4 @@
-module DHT
+module Kademlia
   ##
   # A key used to reference nodes or content.
   #
@@ -6,7 +6,7 @@ module DHT
   # @attr_reader [Number] ID_LENGTH The constant length of the ID. Must match all nodes on network.
   # @attr_reader [Array<Integer>] id The ID_LENGTH Byte Array representing the id.
   class DataKey
-    @attr_reader :id
+    attr_reader :id
     ID_LENGTH = 20
 
     ##
