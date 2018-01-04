@@ -16,7 +16,7 @@ class Kademlia::DataKey
   #
   # Times two, since we'll use hexdigest.
   Size = KeyDigest.new.digest_length * 2
-
+#region Constructors
   ##
   # Initializes a new DataKey object with a given key
   #
@@ -45,17 +45,8 @@ class Kademlia::DataKey
   def self.for(data)
     self.new(KeyDigest.hexdigest(data))
   end
-
-  ##
-  # Determines if a key belongs to a piece of data.
-  #
-  # @author Kenneth Cochran
-  # @param [Object] data The data to compare the key to.
-  # @return [Boolean] Does the key belong to the data.
-  def for?(data)
-    hex == KeyDigest.hexdigest(data)
-  end
-
+#endregion
+#region Conversions
   ##
   # Return a hexadecimal string representation of the id.
   #
@@ -87,7 +78,8 @@ class Kademlia::DataKey
   def to_i
     hex.to_i(16)
   end
-
+#endregion
+#region Comparisons
   ##
   # Are two data keys equal?
   #
@@ -104,6 +96,16 @@ class Kademlia::DataKey
     self == other
   end
 
+  ##
+  # Determines if a key belongs to a piece of data.
+  #
+  # @author Kenneth Cochran
+  # @param [Object] data The data to compare the key to.
+  # @return [Boolean] Does the key belong to the data.
+  def for?(data)
+    hex == KeyDigest.hexdigest(data)
+  end
+#endregion
   ##
   # Measures the distance to another key.
   #
