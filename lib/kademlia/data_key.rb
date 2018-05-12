@@ -2,6 +2,12 @@ module Kademlia;end
 
 require 'digest'
 
+# @todo I'll need to profile to determine the tradeoffs between storing the key
+# in binary and taking longer to convert it to an integer the first time (it has
+# to go through hex first) Or storing it in hex then converting to binary to
+# transmit. Or maybe even just leave it in hex. I think memoizing #to_i is good
+# enough for now.
+
 ##
 # A key used to reference nodes or content.
 #
@@ -9,14 +15,13 @@ require 'digest'
 class Kademlia::DataKey
   ##
   # The Digest algorithm we're using.
-  # @todo I dislike this name.
-  KeyDigest = Digest::SHA256
+  DigestGenerator = Digest::SHA256
   ##
   # The size of the Key, in bytes.
   #
   # Times two, since we'll use hexdigest.
-  Size = KeyDigest.new.digest_length * 2
-#region Constructors
+  Size = DigestGenerator.new.digest_length
+
   ##
   # Initializes a new DataKey object with a given key
   #
@@ -25,13 +30,24 @@ class Kademlia::DataKey
   #  The key to use when creating the ID.
   # @return [void]
   #
-  # @todo Data validation.
+  # @todo Data validation?
+  # @todo store and transmit in binary.
   def initialize(key)
     @id = case key
-    when Kademlia::DataKey then key.hex
-    when String then key
-    when Integer then key.to_s(16)
-    end
+          when Kademlia::DataKey then key.to_bin
+          when String
+            case key.size
+            # If it's in the right format
+            when Size then key
+            # If it's hex
+            when Size * 2 then [key].pack('H*')
+            end
+          when Integer
+            @int_val = key
+            ["%0#{Size}d" % key.to_s(16)].pack('H*')
+          end
+
+    raise ArgumentError, "#{key} is not a valid key." if @id.nil?
   end
 
   ##
@@ -43,18 +59,27 @@ class Kademlia::DataKey
   # @param [Object] data The data to create a key for.
   # @return [DataKey] The key belonging to the data.
   def self.for(data)
-    self.new(KeyDigest.hexdigest(data))
+    self.new(DigestGenerator.digest(data))
   end
-#endregion
-#region Conversions
+
   ##
   # Return a hexadecimal string representation of the id.
   #
   # @author Kenneth Cochran
   # @return [String] A String representation of the key.
   def hex
+    @id.unpack('H*').first
+  end
+
+  ##
+  # Return a binary representation of the id.
+  #
+  # @author Kenneth Cochran
+  # @return [String] The actual key in binary.
+  def to_bin
     @id
   end
+
   ##
   # (see #hex)
   def to_s
@@ -76,10 +101,10 @@ class Kademlia::DataKey
   # @author Kenneth Cochran
   # @return [Integer] An Integer representation of the key.
   def to_i
-    hex.to_i(16)
+    # This will be common. Memoize for efficiency.
+    @int_val ||= hex.to_i(16)
   end
-#endregion
-#region Comparisons
+
   ##
   # Are two data keys equal?
   #
@@ -87,7 +112,7 @@ class Kademlia::DataKey
   # @param [DataKey] other The object to compare
   # @return [Boolean] Are they equal?
   def ==(other)
-    hex == other.hex
+    @id == other.to_bin
   end
 
   ##
@@ -103,9 +128,9 @@ class Kademlia::DataKey
   # @param [Object] data The data to compare the key to.
   # @return [Boolean] Does the key belong to the data.
   def for?(data)
-    hex == KeyDigest.hexdigest(data)
+    @id == DigestGenerator.digest(data)
   end
-#endregion
+
   ##
   # Measures the distance to another key.
   #

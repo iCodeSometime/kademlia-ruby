@@ -1,8 +1,13 @@
+# @todo ReArchitect - the routing node will contain the non-iterative methods
+# and anything that should not be called directly from the client. DRuby
+# references to these will be retrieved by the server, and stored in the routing
+# table.
+
 module Kademlia;end
 #TODO: Need to define comparison function, to use `find_index`.
 #TODO: Needs equality operator, to use `include?`
 class Kademlia::RoutingNode
-  attr_accessor: :node_id, :ip_address, :udp_port
+  attr_accessor :node_id, :ip_address, :udp_port
   def initialize(node_id, ip_address, udp_port)
     @node_id = node_id
     @ip_address = ip_address

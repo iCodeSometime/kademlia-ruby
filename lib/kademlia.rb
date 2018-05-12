@@ -1,1 +1,1 @@
-require 'kademlia/dht'
+require 'kademlia/client'
