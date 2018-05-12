@@ -6,14 +6,16 @@
 # @todo Should we be able to choose a key? Or should it always be the hash
 
 require 'kademlia'
-# Stroing is asynchronous
-key = Kademlia.store(File.read('filename'))
+# Storing is asynchronous
+key, thread = Kad.store(File.read('filename'))
+thread.join
 # Retrieving here is synchronous. Make sure your UI is in a separate thread.
-file_content = Kademlia[key]
+file_content = Kad[key]
 # Alternatively, provide a block to retrieve asynchronously
-Kademlia[key] do |content|
+thread = Kad[key] do |content|
   # Do something with the content
 end
+thread.join
 ```
 
 This is a fairly vanilla kademlia client.

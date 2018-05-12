@@ -25,13 +25,11 @@ class Kademlia::DataKey
   ##
   # Initializes a new DataKey object with a given key
   #
-  # @author Kenneth Cochran
   # @param [Kademlia::DataKey, String, Integer] key
   #  The key to use when creating the ID.
   # @return [void]
   #
-  # @todo Data validation?
-  # @todo store and transmit in binary.
+  # @todo Can we abort initilization if it's already a datakey?
   def initialize(key)
     @id = case key
           when Kademlia::DataKey then key.to_bin
@@ -55,7 +53,6 @@ class Kademlia::DataKey
   #
   # The key ID is set to the hash of the data.
   #
-  # @author Kenneth Cochran
   # @param [Object] data The data to create a key for.
   # @return [DataKey] The key belonging to the data.
   def self.for(data)
@@ -65,7 +62,6 @@ class Kademlia::DataKey
   ##
   # Return a hexadecimal string representation of the id.
   #
-  # @author Kenneth Cochran
   # @return [String] A String representation of the key.
   def hex
     @id.unpack('H*').first
@@ -89,7 +85,6 @@ class Kademlia::DataKey
   ##
   # The preferred representation for debugging.
   #
-  # @author Kenneth Cochran
   # @return A String representation of the key.
   def inspect
     '#<Kademlia::DataKey:0x' + hex + '>'
@@ -98,7 +93,6 @@ class Kademlia::DataKey
   ##
   # Return an integer representation of the ID.
   #
-  # @author Kenneth Cochran
   # @return [Integer] An Integer representation of the key.
   def to_i
     # This will be common. Memoize for efficiency.
@@ -108,7 +102,6 @@ class Kademlia::DataKey
   ##
   # Are two data keys equal?
   #
-  # @author Kenneth Cochran
   # @param [DataKey] other The object to compare
   # @return [Boolean] Are they equal?
   def ==(other)
@@ -124,7 +117,6 @@ class Kademlia::DataKey
   ##
   # Determines if a key belongs to a piece of data.
   #
-  # @author Kenneth Cochran
   # @param [Object] data The data to compare the key to.
   # @return [Boolean] Does the key belong to the data.
   def for?(data)
@@ -134,7 +126,6 @@ class Kademlia::DataKey
   ##
   # Measures the distance to another key.
   #
-  # @author Kenneth Cochran
   # @param [DataKey] other The key to calculate the distance to.
   # @return (see #calc_distance)
   def distance_to(other)
