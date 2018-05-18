@@ -1,4 +1,8 @@
 module Kademlia;end
+# @todo ReOrg. Method missing is not needed.
+# Should provide methods to return k closest nodes. Should manage what k is.
+# Should handle adding nodes to routing table. THAT IS IT.
+
 
 ##
 # Stores the Routing Table.
@@ -53,7 +57,10 @@ class Kademlia::Routing
     ret
   end
 
-  # The routing bucket should only be accessible from the routing table singleton.
+# @todo ReOrg. The routing bucket should determine whether or not a given node
+# actually gets entered. e.g. if there is room in the bucket, or a node is stale
+# Most of this is unneeded.
+
   class Kademlia::RoutingBucket
     # Also known as "k". Should be set to a value that makes it very unlikely
     # that a node will lose all of it's valid contacts. Should be adjusted with churn.

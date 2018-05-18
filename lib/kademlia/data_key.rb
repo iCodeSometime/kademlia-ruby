@@ -56,7 +56,7 @@ class Kademlia::DataKey
   # @param [Object] data The data to create a key for.
   # @return [DataKey] The key belonging to the data.
   def self.for(data)
-    self.new(DigestGenerator.digest(data))
+    self.new(DigestGenerator.digest(data.to_s))
   end
 
   ##

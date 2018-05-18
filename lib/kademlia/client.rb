@@ -3,6 +3,7 @@ module Kademlia;end
 require 'singleton'
 require 'kademlia/server'
 require 'kademlia/data_key'
+require 'drb/drb'
 
 ##
 # The Client class contains all of the methods designed to be called directly
@@ -12,6 +13,7 @@ require 'kademlia/data_key'
 class Kademlia::Client
   include Singleton
 
+  # TODO: Allow choosing the first client to connect to.
   SERVER_URI = Kademlia::Server.instance.uri
   DRb.start_service
   Server = DRbObject.new_with_uri(SERVER_URI)
@@ -21,22 +23,26 @@ class Kademlia::Client
     thread = Thread.new(key, data) do |key, data|
       Server.store(key, data)
     end
-    return [key, thread]
+    return key, thread
   end
 
   def [](key, &block)
     if block_given?
-      async_retrieve(key, block)
+      _async_retrieve(key, block)
     else
-      return sync_retrieve(key)
+      return _sync_retrieve(key)
     end
   end
 
-  def sync_retrieve(key)
+  # @todo not sure this is the best way to do this.
+  # Internally, the server is going to be parellelizing requests anyways.
+  # We should probably just have these implemented in there.
+  private
+  def _sync_retrieve(key)
     return Server.retrieve(key)
   end
 
-  def async_retrieve(key, &block)
+  def _async_retrieve(key, &block)
     return Thread.new(key, &block) do |key, &block|
       block.call(Server.retrieve(key))
     end
