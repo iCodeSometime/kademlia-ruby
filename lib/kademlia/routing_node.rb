@@ -50,7 +50,7 @@ class Kademlia::RoutingNode
     # custom keys is going to cause problems retrieving data. It's either that, or
     # use only the hash as the key..
     # @todo Will it be better to use key.to_bin? I don't think there's any advantage
-    # to storing the whole object here.
+    # to using the whole object here.
     return false unless key.class == DataKey
     @values[key] = value
     return true
