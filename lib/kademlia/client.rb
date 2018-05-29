@@ -21,7 +21,7 @@ class Kademlia::Client
   # I think we can get rid or it.
   DRb.start_service
   Server = DRbObject.new_with_uri(SERVER_URI)
-
+  # @todo Let's make this synchronous without a block, and async with.
   def store(data)
     key = Kademlia::DataKey.for(data)
     thread = Thread.new(key, data) do |key, data|
