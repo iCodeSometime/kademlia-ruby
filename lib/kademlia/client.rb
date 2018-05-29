@@ -53,4 +53,5 @@ class Kademlia::Client
   end
 end
 
+# @todo Let's do something more flexible here.
 Kad = Kademlia::Client.instance
