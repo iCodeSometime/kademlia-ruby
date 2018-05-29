@@ -29,12 +29,30 @@ tradeoffs that come up, usability is preferred over strict compliance to the
 standard. Eventually, I hope to add some kind of plugin architecture, along with
 some plugins to enable different functionality.
 
-## Contributors
-Most of the meat of this project is in routing.rb and server.rb.
-Routing manages the local routing table. Server contains all of the iterative
-lookup and store methods.
+## Contributing
+Routing manages the local routing table, Server contains all of the iterative
+lookup and store methods, and Node contains all of the methods to interact
+directly with the information known by that particular node.
 
-Plugin Ideas/Future Work:
+## Semantic Versioning Policy
+While most will only use the methods in client.rb, this is provided as a
+convenience for working with the DHT. We consider the API to include all
+public methods in public classes. Private methods or classes could change at any
+time, and should not be relied upon.
+Until version 0.1.0, any part of the public API can change with any release.
+Until version 1.0 is released, version numbers will be used as follows:
+
+Any version that increments the patch number (0.0.x) will not change the public
+API.
+Any version that increments the minor number (0.x.0) will do one or several of:
+ - add something to the public API
+ - deprecate a portion of the public API
+ - remove something that was previously deprecated.
+Deprecated parts of the API will be removed in the very next minor release.
+This is likely only relevant to specialized use cases. The basic store and retrieve
+API described earlier in this document is not likely to change.
+
+## Plugin Ideas/Future Work:
  - adding an identity layer, in which a private key is generated and the
 corresponding public key is distributed as part the bootstrapping process. This
 would then be stored in the routing table. The purpose of this would be to
