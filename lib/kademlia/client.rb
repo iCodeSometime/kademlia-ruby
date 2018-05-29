@@ -15,6 +15,10 @@ class Kademlia::Client
 
   # TODO: Allow choosing the first client to connect to.
   SERVER_URI = Kademlia::Server.instance.uri
+
+  ##
+  # This is only needed if we pass a non-marshallable object as an argument.
+  # I think we can get rid or it.
   DRb.start_service
   Server = DRbObject.new_with_uri(SERVER_URI)
 

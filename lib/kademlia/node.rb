@@ -7,52 +7,55 @@ module Kademlia;end
 require 'kademlia/routing'
 require 'kademlia/data_key'
 
-class Kademlia::RoutingNode
+## @todo should I factor out a generic send message command so I don't have to
+# remember to call @router.touch for each method??
+
+class Kademlia::Node
   def initialize(router)
+    # @todo Should this be deterministic? e.g. based off mac address?
+    @id = DataKey.for(Random.new_seed)
     @values = {}
     @router = router
+    @router.register(id)
   end
 
-  ##
-  # Lazy generate or return the key.
   def id
-    return @id ||= DataKey.for(Random.new_seed)
+    return @id
   end
 
   ##
   # Check if node is up.
-  def ping(routing_node)
-    @router.try_store(routing_node)
+  def ping(calling_node)
+    @router.touch(calling_node)
     return true
   end
 
   ##
   # Returns k closest nodes.
-  def find_node(routing_node, key)
-    @router.try_store(routing_node)
+  def find_node(calling_node, key)
+    @router.touch(calling_node)
     return @router.get_closest_nodes(key)
   end
 
   ##
   # Returns the value if stored here, or k closest nodes.
-  def find_value(routing_node, key)
-    @router.try_store(routing_node)
-    value = @values[key]
+  def find_value(calling_node, key)
+    @router.touch(calling_node)
+    value = @values[key.to_bin]
     return value unless value.nil?
     return find_node(key)
   end
 
   ##
   # Stores the value here.
-  def store(routing_node, key, value)
-    @router.try_store(routing_node)
-    # I thought of just requiring that keys implement distance_to, but using
-    # custom keys is going to cause problems retrieving data. It's either that, or
-    # use only the hash as the key..
-    # @todo Will it be better to use key.to_bin? I don't think there's any advantage
-    # to using the whole object here.
+  def store(calling_node, key, value)
+    @router.touch(calling_node)
     return false unless key.class == DataKey
-    @values[key] = value
+    @values[key.to_bin] = value
     return true
+  end
+
+  def ==(other)
+    return id == other.id
   end
 end

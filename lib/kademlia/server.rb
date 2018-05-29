@@ -1,8 +1,8 @@
 module Kademlia; end
 
 require 'drb/drb'
-require 'kademlia/routing'
-require 'kademlia/routing_node'
+require 'kademlia/routing/router'
+require 'kademlia/node'
 require 'kademlia/data_item'
 require 'singleton'
 require 'thwait'
@@ -17,8 +17,8 @@ class Kademlia::Server
 
   @URI = nil
   @concurrent_lookups = 3
-  @routing_table = Kademlia::Routing.instance
-  @my_routing_node = Kademlia::RoutingNode.new(@routing_table)
+  @router = Kademlia::Routing::Router.instance
+  @my_node = Kademlia::Node.new(@router)
 
   def uri
     return @URI
@@ -30,19 +30,20 @@ class Kademlia::Server
   end
 
   # @todo Is this actually needed?
-  def get_routing_node
-    return @my_routing_node
+  # Update, pretty sure it is at least for bootstrapping.
+  def get_node
+    return @my_node
   end
 
   def node_lookup(key)
     _node_lookup(key) do |contact|
-      Thread.current[:contacts] = contact.find_node(@my_routing_node, key)
+      Thread.current[:contacts] = contact.find_node(@my_node, key)
     end
   end
 
   def value_lookup(key)
     _node_lookup(key) do |contact|
-      res = contact.find_value(@my_routing_node, key)
+      res = contact.find_value(@my_node, key)
       if res.class = DataItem
         Thread.current[:value] = res
       else
@@ -53,7 +54,7 @@ class Kademlia::Server
 
   def store(key, value)
     node_lookup(key).each do |contact|
-      contact.store(@my_routing_node, key, value)
+      contact.store(@my_node, key, value)
     end
   end
   private
@@ -63,7 +64,7 @@ class Kademlia::Server
   # block given must expose contacts returned, and a value, if any.
   def _node_lookup(key, &block)
     # Build initial contact list.
-    contacts = @my_routing_node.find_node(@my_routing_node.id)
+    contacts = @my_node.find_node(@my_node.id)
     contact_list = ContactsList.new(contacts, key)
 
     # Build initial threadpool.
@@ -76,7 +77,7 @@ class Kademlia::Server
       thread = tw.next_wait
       return [thread[:value], contact_list.contacts] if thread[:value]
       new_contacts = thread[:contacts] || []
-      @router.try_store(new_contacts)
+      @router.touch(new_contacts)
       contact_list.add_contacts(new_contacts)
 
       # Add next thread if exists, and exit if done.
@@ -88,7 +89,9 @@ class Kademlia::Server
 
   # This class is NOT thread safe, and should only be accessed by one thread.
   # This is an implementation detail, added to keep _node_lookup dryyyy
+  # Private means nothing in this instance, just here for reading clarity.
   private
+  # @todo make sure this whole thing makes sense.
   class ContactsList
     def initialize(contacts, key)
       # The key is used to find the distance to.
@@ -139,7 +142,7 @@ end
 URI = 'druby://localhost:0'
 FRONT_OBJECT = Kademlia::Server.instance
 
-# @todo explicitly undef unsafe methods in Kademlia::Server and RoutingNode
+# @todo explicitly undef unsafe methods in Kademlia::Server and Node
 # $SAFE is not implemented in rubinius. This would just be defining a new global
 $SAFE = 1
 
