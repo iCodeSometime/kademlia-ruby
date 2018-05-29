@@ -1,5 +1,4 @@
 module Kademlia; end
-module Kademlia::Routing; end
 # @todo ReOrg. The routing bucket should determine whether or not a given node
 # actually gets entered. e.g. if there is room in the bucket, or a node is stale
 # Most of this is unneeded.
@@ -7,7 +6,8 @@ module Kademlia::Routing; end
 # The documentation states that the array should be ordered by most recent seen.
 # Instead of that, I'm just keeping track of last seen.
 
-  class Kademlia::Routing::RoutingBucket
+  class Kademlia::Router::RoutingBucket
+    private_constant :Peer
     def initialise(local_id, max_peers)
       @local_id = local_id
       @max_peers = max_peers

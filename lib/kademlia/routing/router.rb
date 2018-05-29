@@ -12,7 +12,8 @@ require 'singleton'
 # The paper says it is a system wide setting, but I don't see any reason
 # why it needs to be. Each node could adjust their own, based on the actual
 # churn observed.
-class Kademlia::Routing::Router
+class Kademlia::Router
+  private_constant :RoutingBucket
   include Singleton
 
   # Referred to as *k* in the paper.
@@ -27,6 +28,10 @@ class Kademlia::Routing::Router
   # That logic should go here.
   def touch(routing_node)
     get_bucket(routing_node.id).touch(routing_node)
+  end
+
+  def replication_factor
+    return replication_factor
   end
 
   ##
