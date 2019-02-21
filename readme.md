@@ -1,3 +1,6 @@
+This project is a work in progress, and is currently non-functional.
+Anything in this readme, is a work in progress, and may change.
+
 # Installation
  `gem install Kademlia`
 
@@ -9,7 +12,7 @@ require 'kademlia'
 # Storing is asynchronous
 key, thread = Kad.store(File.read('filename'))
 thread.join
-# Retrieving here is synchronous. Make sure your UI is in a separate thread.
+# Retrieving here is synchronous. Make sure your UI is in a separate thread, if applicable
 file_content = Kad[key]
 # Alternatively, provide a block to retrieve asynchronously
 thread = Kad[key] do |content|
@@ -19,15 +22,17 @@ thread.join
 ```
 
 This project makes no claim to be a strict implementation of the original paper,
-and will not be compatible with implementations that are. Rather it is  a Ruby
-flavored interpretation of the spec, passing around druby objects as the network
-nodes, and calling commands directly on these, rather than sending UDP packets.
-
+and in it's initial implementation will not be compatible with implementations that
+are. Rather it is  a Ruby flavored interpretation of the spec, passing around druby
+objects as the network nodes, and calling commands directly on these, rather than
+sending UDP packets.
 
 While it's meant to conform fairly closely with the original paper, in any
 tradeoffs that come up, usability is preferred over strict compliance to the
 standard. Eventually, I hope to add some kind of plugin architecture, along with
-some plugins to enable different functionality.
+some plugins to enable different functionality - e.g. both bittorrent and ethereum
+contain incompatible implementations of kademlia. Independently customizable
+elements are important in order to be compatible with different implementations.
 
 ## Contributors
 Most of the meat of this project is in routing.rb and server.rb.
@@ -47,10 +52,12 @@ other implementations.
  - Allow customizing the key generation algorithm used - e.g. the kademlia spec
 uses 160 bit IDs, but Ethereum uses 256 bit IDs.
  - Implement some kind of checking whether nodes actually store the data. This
-would help prevent spartacus attacks. Nodes would be randomly checked to ensure
+would help prevent sybil attacks. Nodes would be randomly checked to ensure
 they respond with the data they were told to store. This would likely need to
 come from a node other than the one that sent the data in the first place, to
-avoid detecting the test
+avoid detecting the test.
  - Allow an alternate recursive routing structure, rather than the current
 iterative structure. e.g. nodes forward messages rather than returning contacts.
-This should help both with NAT traversal and adding an identity layer.
+This should help both with NAT traversal, but would hinder the self-healing proprties
+of the network - meaning nodes would need other ways to obtain network information.
+Probably should not be a default.

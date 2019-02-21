@@ -17,8 +17,9 @@ class Kademlia::Client
   SERVER_URI = Kademlia::Server.instance.uri
 
   ##
-  # This is only needed if we pass a non-marshallable object as an argument.
-  # I think we can get rid or it.
+  # @todo Only needed if we pass a non-marshallable object as an argument.
+  # 90% sure we can get rid or it. Also, I think we wouldn't need it anyways,
+  # since the server does this.
   DRb.start_service
   Server = DRbObject.new_with_uri(SERVER_URI)
   # @todo Let's make this synchronous without a block, and async with.
